@@ -1,0 +1,21 @@
+# Local/private overrides
+local/
+home/.gitconfig.local
+
+# macOS
+.DS_Store
+
+# Editor temp files
+*.swp
+*.swo
+*~
+
+# Neovim local noise
+home/.config/nvim/.netrwhist
+home/.config/nvim/.pytest_cache/
+home/.config/nvim/.benchmarks/
+home/.config/nvim/session/
+home/.config/nvim/sessions/
+
+# Yazi runtime leftovers
+home/.config/yazi/package/
