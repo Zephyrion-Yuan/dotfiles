@@ -31,15 +31,46 @@ return {
 	"neovim/nvim-lspconfig",
 	-- Treesitter
 	{
-		'nvim-treesitter/nvim-treesitter',
-		run = ':TSUpdate'
+		"nvim-treesitter/nvim-treesitter",
+		build = ":TSUpdate",
+		config = function()
+			require("config.treesitter")
+		end,
 	},
 	-- markdown-preview
 	{
-    		"iamcco/markdown-preview.nvim",
-    		cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" 			},
-    		ft = { "markdown" },
-    		build = function() vim.fn["mkdp#util#install"]() end,
+		"iamcco/markdown-preview.nvim",
+		cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
+		ft = { "markdown" },
+		init = function()
+			vim.g.mkdp_filetypes = { "markdown" }
+			vim.g.mkdp_echo_preview_url = 1
+		end,
+		build = function(plugin)
+			local install_cmd = nil
+			if vim.fn.executable("npm") == 1 then
+				install_cmd = { "npm", "install", "--no-fund", "--no-audit" }
+			elseif vim.fn.executable("yarn") == 1 then
+				install_cmd = { "yarn", "install" }
+			end
+
+			if install_cmd then
+				local result = vim.system(install_cmd, {
+					cwd = plugin.dir .. "/app",
+					text = true,
+				}):wait()
+				if result.code == 0 then
+					return
+				end
+
+				vim.notify(
+					"markdown-preview.nvim app dependency install failed, falling back to mkdp#util#install()",
+					vim.log.levels.WARN
+				)
+			end
+
+			vim.fn["mkdp#util#install"]()
+		end,
 	}
 
 }
