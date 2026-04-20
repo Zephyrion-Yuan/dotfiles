@@ -102,6 +102,8 @@ bash ~/.config/tmux/scripts/detect_client_mode.sh auto
 
 判定阈值可以通过环境变量 `TMUX_MOBILE_MAX_WIDTH` 覆盖（默认 100）。
 
+频繁切换客户端后如果状态栏、面板边框、面板布局看起来"卡在旧尺寸上"，按 `prefix C-r` 可以强制重绘：清掉 `@ui_mode` 守卫、删除状态栏缓存、重跑一次自动检测，然后向每个已连接的客户端发 `refresh-client`，并按当前布局做一次 `select-layout` 让面板重新贴边。
+
 ## 常见维护命令速查
 
 ```bash

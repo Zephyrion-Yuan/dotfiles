@@ -67,4 +67,25 @@ case "$mode" in
 esac
 
 tmux set -g '@ui_mode' "$mode"
+
+# Drop cached format output so status-left/right subshells re-run now.
+rm -f /tmp/tmux-tracker-cache.json 2>/dev/null || true
+
+# Full redraw for every attached client. Without the -t loop, only the
+# triggering client repaints; other attached clients keep stale borders
+# and status until their next input.
+while IFS= read -r cli; do
+  [[ -n "$cli" ]] && tmux refresh-client -t "$cli" 2>/dev/null || true
+done < <(tmux list-clients -F '#{client_name}' 2>/dev/null)
+
+# Force pane geometry to re-fit the (now resized) window: reapplying the
+# current layout nudges tmux to reflow around the pane-border-status
+# change without picking a new layout.
+while IFS= read -r entry; do
+  [[ -z "$entry" ]] && continue
+  wid="${entry%% *}"
+  layout="${entry#* }"
+  [[ -n "$wid" && -n "$layout" ]] && tmux select-layout -t "$wid" "$layout" 2>/dev/null || true
+done < <(tmux list-windows -a -F '#{window_id} #{window_layout}' 2>/dev/null)
+
 tmux refresh-client -S 2>/dev/null || true
