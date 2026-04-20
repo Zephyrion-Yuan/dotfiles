@@ -46,15 +46,6 @@ apply_mobile() {
   tmux set -g status-right '#[fg=colour244] #h #[default]'
   tmux setw -g window-status-format ' #I:#W '
   tmux setw -g window-status-current-format '#[fg=#{?#{!=:#{environ:TMUX_THEME_COLOR},},#{environ:TMUX_THEME_COLOR},#b294bb},bold] #I:#W '
-
-  # Phone terminals (Termius etc.) synthesise Up/Down arrow keys from
-  # vertical swipe gestures. Absorb them at the root table so a swipe
-  # doesn't cycle shell history or drift the cursor. Copy-mode has its
-  # own table and is unaffected — real arrow-key scroll there still
-  # works. PageUp gives an explicit "enter scrollback" path.
-  tmux bind -T root Up     run-shell -b ':'
-  tmux bind -T root Down   run-shell -b ':'
-  tmux bind -T root PageUp copy-mode -u
 }
 
 apply_desktop() {
@@ -67,11 +58,6 @@ apply_desktop() {
   tmux set -g status-right "#(~/.config/tmux/tmux-status/right.sh)"
   tmux setw -g window-status-format '#[fg=#c5c8c6] #W#(~/.config/tmux/tmux-status/window_task_icon.sh "#{window_id}") '
   tmux setw -g window-status-current-format '#[fg=#{?#{!=:#{environ:TMUX_THEME_COLOR},},#{environ:TMUX_THEME_COLOR},#b294bb},bold] #W#(~/.config/tmux/tmux-status/window_task_icon.sh "#{window_id}") '
-
-  # Release the arrow-key absorbers installed by mobile mode.
-  tmux unbind -T root Up     2>/dev/null || true
-  tmux unbind -T root Down   2>/dev/null || true
-  tmux unbind -T root PageUp 2>/dev/null || true
 }
 
 case "$mode" in
