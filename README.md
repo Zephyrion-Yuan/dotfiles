@@ -162,6 +162,33 @@ sock=~/.dtach/<name>.sock
 fuser -k "$sock" && rm -f "$sock"            # 杀 server + 立刻清理 socket 文件
 ```
 
+### 自动日志（解决 dtach 64KB 回放缓冲不够大的问题）
+
+每次 `mobile-attach` **新建** session 时（命中已存在的 live session 时不会重复建日志），会在 `~/.dtach/logs/<name>-<ISO时间>.log` 留一份完整 PTY 旁录：
+
+- 实现方式：在 dtach 的 server 命令里套一层 `script -qfe -c "bash -l" <log>`，因此 `script` 的生命周期严格绑在 dtach server 上——`bash` 退出 → `script` 退出 → dtach server 收工 → socket 清理 → 日志收尾，没有遗留进程。
+- `~/.dtach/logs/<name>.current.log` 是个符号链接，永远指向对应 session 当前活跃的那份日志，方便 `less -R` / `tail -f`。
+- `-f` 每次写都 flush，所以断电/崩溃不会丢最近几秒的内容；`tail -f` 实时跟随也没问题。
+- 默认每个 session 名只保留**最近 10 份**日志（旧的自动删），用 `MOBILE_ATTACH_KEEP_LOGS` 环境变量覆盖。
+- 完全不想记日志：`export MOBILE_ATTACH_NOLOG=1` 即可跳过 `script` 那一层。
+- 目录权限：`~/.dtach/logs/` 为 `700`、每份日志为 `600`，只有你能读——因为终端输出可能含敏感字符。
+
+查看历史输出的典型用法：
+
+```bash
+# 在另一个连接里实时跟当前 session 的输出
+tail -f ~/.dtach/logs/main.current.log
+
+# 完整回放某次 session（像录像一样，ANSI 会被终端解释）
+less -R ~/.dtach/logs/main-20260421T143000.log
+
+# 只搜文本内容（剔除控制序列）
+grep -a "some keyword" ~/.dtach/logs/main-*.log
+
+# 删除某个 name 的所有历史日志
+rm ~/.dtach/logs/name-*.log ~/.dtach/logs/name.current.log
+```
+
 ## 常见维护命令速查
 
 ```bash

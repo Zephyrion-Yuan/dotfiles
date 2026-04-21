@@ -20,8 +20,11 @@
 set -euo pipefail
 
 DIR="${MOBILE_DTACH_DIR:-$HOME/.dtach}"
+LOG_DIR="${MOBILE_DTACH_LOG_DIR:-$DIR/logs}"
+KEEP_LOGS="${MOBILE_ATTACH_KEEP_LOGS:-10}"
 SHELL_CMD=("${SHELL:-/bin/bash}" -l)
-mkdir -p "$DIR"
+mkdir -p "$DIR" "$LOG_DIR"
+chmod 700 "$LOG_DIR" 2>/dev/null || true
 
 # Is the unix socket actually in LISTEN state with a server accept()ing
 # behind it? `ss -lx` is the strictest check — a half-dead dtach that
@@ -69,6 +72,17 @@ valid_name() {
   [[ "$1" =~ ^[A-Za-z0-9._-]+$ ]]
 }
 
+# Drop all but the newest $KEEP_LOGS logs for a given session name so
+# automatic logging doesn't grow unbounded on disk.
+rotate_logs() {
+  local name="$1"
+  (
+    cd "$LOG_DIR" 2>/dev/null || exit 0
+    ls -1t -- "${name}"-*.log 2>/dev/null | tail -n +$((KEEP_LOGS + 1)) \
+      | xargs -r -d '\n' rm -f -- 2>/dev/null
+  ) || true
+}
+
 start_or_attach() {
   local name="$1"
   if ! valid_name "$name"; then
@@ -76,17 +90,45 @@ start_or_attach() {
     exit 1
   fi
   local sock="$DIR/${name}.sock"
-  if [[ -S "$sock" ]] && is_alive "$sock"; then
-    printf 'Session "%s" already exists, attaching.\n' "$name"
-  else
-    # Stale socket file from a previously-killed server; remove so
-    # dtach -A can rebind cleanly.
-    rm -f -- "$sock" 2>/dev/null || true
-    printf 'Creating new session "%s".\n' "$name"
-  fi
+
+  # Existing live session → pure client attach. The log file was
+  # opened by the server when it first started and is tied to that
+  # server's lifetime, so we don't touch logging here.
+  #
   # -r winch: on reattach send SIGWINCH so full-screen programs
   # (watch, top, htop, vim) redraw themselves. Ctrl-L (dtach's
   # default) misses watch in particular.
+  if [[ -S "$sock" ]] && is_alive "$sock"; then
+    printf 'Session "%s" already exists, attaching.\n' "$name"
+    exec dtach -A "$sock" -r winch -z -E "${SHELL_CMD[@]}"
+  fi
+
+  # Fresh session: clean stale socket, optionally wrap with script(1)
+  # so every PTY byte is mirrored to a log file. script's child shell
+  # is bound to this dtach server's lifetime: when bash exits script
+  # returns (thanks to -e), dtach's child died, dtach server unlinks
+  # the socket and exits, the log file closes. No leaked processes.
+  rm -f -- "$sock" 2>/dev/null || true
+  printf 'Creating new session "%s".\n' "$name"
+
+  if [[ -z "${MOBILE_ATTACH_NOLOG:-}" ]] && command -v script >/dev/null 2>&1; then
+    rotate_logs "$name"
+    local ts logfile current
+    ts=$(date +%Y%m%dT%H%M%S)
+    logfile="$LOG_DIR/${name}-${ts}.log"
+    current="$LOG_DIR/${name}.current.log"
+    ( umask 077; : > "$logfile" )
+    ln -sfn -- "$logfile" "$current"
+    printf 'Logging session to %s\n' "$logfile"
+    # script flags:
+    #   -q  suppress "Script started/done" banners (transparent)
+    #   -f  flush after each write (tail -f from elsewhere works)
+    #   -e  exit with the child's exit code (bash exit → script exit)
+    #   -c  run the given command instead of an interactive shell
+    exec dtach -A "$sock" -r winch -z -E \
+      script -qfe -c "${SHELL_CMD[*]}" -- "$logfile"
+  fi
+
   exec dtach -A "$sock" -r winch -z -E "${SHELL_CMD[@]}"
 }
 
