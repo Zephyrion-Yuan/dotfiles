@@ -104,6 +104,64 @@ bash ~/.config/tmux/scripts/detect_client_mode.sh auto
 
 频繁切换客户端后如果状态栏、面板边框、面板布局看起来"卡在旧尺寸上"，按 `prefix C-r` 可以强制重绘：清掉 `@ui_mode` 守卫、删除状态栏缓存、重跑一次自动检测，然后向每个已连接的客户端发 `refresh-client`，并按当前布局做一次 `select-layout` 让面板重新贴边。
 
+## 手机端：dtach 替代 tmux
+
+tmux 在手机 Termius 上的根本困扰是 alternate screen——一进 tmux，Termius 就识别为 alt-screen TUI，把单/双指上下滑动合成成方向键 / `PageUp`、`PageDown`，本地 scrollback 失效。手机轻度使用（看 logs、跑命令、断线复连）不需要多窗口/多面板，可以**直接绕开 tmux**，改用 [`dtach`](https://dtach.sourceforge.net/)：只做"进程保活 + detach/attach"，不切 alt-screen，Termius 的本地滚动条/手势全程可用。
+
+仓库里的 `home/.local/bin/mobile-attach` 是个 wrapper：
+
+- 列出 `~/.dtach/*.sock` 里**真正存活**的 dtach session（用 `fuser`/`ss`/`lsof` 探活），按 mtime 倒序。
+- 顺手把僵尸 socket 文件删掉——dtach server 被 `kill -9` 或机器宕机后会留下死 socket 文件，菜单里不会再看到。
+- 默认按回车 = 接最新一条 session（绝大多数情况就是上次断开的那个）；输入数字接旧 session；`n` 新建；`q` 退出。
+- session 名字 sanitize 成 `[A-Za-z0-9._-]`。
+- 也可以 `mobile-attach <name>` 直接跳过菜单，"存在则接入，不存在则新建"。
+
+### 新建 socket 触发条件 / 复用 vs 新建
+
+只有以下三种路径会在 `~/.dtach/` 下产生**新的** `.sock` 文件，其它任何操作都是 attach 到已有 socket：
+
+| 触发方式 | 新建条件 | 行为 |
+|---|---|---|
+| 菜单一进来就显示 `No live dtach sessions` | 目录被 sweep 后没有任何存活 session | 提示 `Name for new session [main]:`，回车默认 `main` |
+| 菜单选 `n` | 输入的名字**不**对应一个存活的 socket | 打印 `Creating new session "<name>".` |
+| `mobile-attach <name>` | 同上 | 打印 `Creating new session "<name>".` |
+
+如果输入的名字命中了一个**存活**的 socket（在菜单的 `n` 里输入了已有名字，或 `mobile-attach <name>` 撞名），脚本会显式打印 `Session "<name>" already exists, attaching.` 而不是默默 dtach 进去——这层提示是为了避开 `dtach -A` 默认"找不到才创建、找到就 attach"那条隐式语义带来的误会。
+
+如果输入的名字命中的是一个**僵尸** socket（文件存在但 server 已死），脚本会先 `rm -f` 掉再创建新的——所以同名"僵尸→新建"是允许且无声的，不会被误以为接入旧数据。
+
+安装与挂接：
+
+```bash
+sudo apt install dtach              # 一次即可
+mkdir -p ~/.dtach ~/.local/bin
+ln -sf ~/.dotfiles/home/.local/bin/mobile-attach ~/.local/bin/mobile-attach
+# 确保 ~/.local/bin 在 PATH 里（一般 Debian/Ubuntu 默认就在）
+```
+
+Termius 侧把目标 host 的 **Startup Snippet / Initial Command** 设成：
+
+```bash
+~/.local/bin/mobile-attach
+```
+
+之后每次手机端 SSH 上来都会先看到 session 选择菜单，断线/退出 Termius 再连回来，按一下回车就回到原来那个 dtach 里的 shell（包括跑了一半的 Claude Code、`tail -f`、训练任务等）。
+
+手动管理小抄：
+
+```bash
+mobile-attach                                # 菜单式进入
+mobile-attach <name>                         # 跳过菜单，存在则接入/不存在则新建
+dtach -A ~/.dtach/<name>.sock -z -E bash -l  # 等价的纯 dtach 写法
+dtach -a ~/.dtach/<name>.sock -E             # 只接入（不存在则报错）
+ls -lt ~/.dtach/                             # 看现有 socket
+# detach: 直接关掉 SSH 连接即可（dtach 设了 -E 关掉了 ^\ 转义键）
+
+# 显式销毁一个 session
+sock=~/.dtach/<name>.sock
+fuser -k "$sock" && rm -f "$sock"            # 杀 server + 立刻清理 socket 文件
+```
+
 ## 常见维护命令速查
 
 ```bash
