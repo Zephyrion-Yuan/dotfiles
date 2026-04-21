@@ -23,21 +23,25 @@ DIR="${MOBILE_DTACH_DIR:-$HOME/.dtach}"
 SHELL_CMD=("${SHELL:-/bin/bash}" -l)
 mkdir -p "$DIR"
 
-# Is the socket file actively held by a dtach server process? Tries
-# fuser -> ss -> lsof in that order. Returns 0 if a server is alive.
+# Is the unix socket actually in LISTEN state with a server accept()ing
+# behind it? `ss -lx` is the strictest check — a half-dead dtach that
+# lost its child shell but didn't exit yet will hold the socket file
+# (so fuser sees it) but not listen, which is exactly the stale case
+# we want to treat as dead. Falls back to fuser / lsof if ss is
+# missing, accepting the weaker guarantee there.
 is_alive() {
   local sock="$1"
-  if command -v fuser >/dev/null 2>&1; then
-    fuser "$sock" >/dev/null 2>&1 && return 0
-    return 1
-  fi
   if command -v ss >/dev/null 2>&1; then
-    ss -lxH 2>/dev/null | awk -v s="$sock" '$5 == s { found=1 } END { exit !found }' && return 0
-    return 1
+    ss -lxH 2>/dev/null | awk -v s="$sock" '$5 == s { found=1 } END { exit !found }'
+    return
+  fi
+  if command -v fuser >/dev/null 2>&1; then
+    fuser "$sock" >/dev/null 2>&1
+    return
   fi
   if command -v lsof >/dev/null 2>&1; then
-    lsof -- "$sock" >/dev/null 2>&1 && return 0
-    return 1
+    lsof -- "$sock" >/dev/null 2>&1
+    return
   fi
   # No probe tool available — assume alive so we don't delete real
   # sessions on a stripped-down system.
@@ -80,7 +84,10 @@ start_or_attach() {
     rm -f -- "$sock" 2>/dev/null || true
     printf 'Creating new session "%s".\n' "$name"
   fi
-  exec dtach -A "$sock" -z -E "${SHELL_CMD[@]}"
+  # -r winch: on reattach send SIGWINCH so full-screen programs
+  # (watch, top, htop, vim) redraw themselves. Ctrl-L (dtach's
+  # default) misses watch in particular.
+  exec dtach -A "$sock" -r winch -z -E "${SHELL_CMD[@]}"
 }
 
 prompt_new() {
@@ -123,7 +130,7 @@ case "$pick" in
     ;;
   *)
     if [[ "$pick" =~ ^[0-9]+$ ]] && (( pick >= 1 && pick <= ${#live[@]} )); then
-      exec dtach -a "${live[$((pick-1))]}" -E
+      exec dtach -a "${live[$((pick-1))]}" -r winch -E
     fi
     printf 'invalid choice: %s\n' "$pick" >&2
     exit 1
