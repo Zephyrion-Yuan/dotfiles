@@ -104,6 +104,8 @@ bash ~/.config/tmux/scripts/detect_client_mode.sh auto
 
 频繁切换客户端后如果状态栏、面板边框、面板布局看起来"卡在旧尺寸上"，按 `prefix C-r` 可以强制重绘：清掉 `@ui_mode` 守卫、删除状态栏缓存、重跑一次自动检测，然后向每个已连接的客户端发 `refresh-client`，并按当前布局做一次 `select-layout` 让面板重新贴边。
 
+> **从 0 部署到新服务器 / 新中继？** 参考 [`docs/mobile-relay-setup.md`](docs/mobile-relay-setup.md) —— 一份独立的技术文档，涵盖中继 VPS 硬化、autossh + systemd 反向隧道、Termius ProxyJump 配置、`mobile-attach` 落地的端到端步骤。
+
 ## 手机端：dtach 替代 tmux
 
 tmux 在手机 Termius 上的根本困扰是 alternate screen——一进 tmux，Termius 就识别为 alt-screen TUI，把单/双指上下滑动合成成方向键 / `PageUp`、`PageDown`，本地 scrollback 失效。手机轻度使用（看 logs、跑命令、断线复连）不需要多窗口/多面板，可以**直接绕开 tmux**，改用 [`dtach`](https://dtach.sourceforge.net/)：只做"进程保活 + detach/attach"，不切 alt-screen，Termius 的本地滚动条/手势全程可用。
