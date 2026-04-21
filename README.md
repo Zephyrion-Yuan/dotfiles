@@ -104,7 +104,7 @@ bash ~/.config/tmux/scripts/detect_client_mode.sh auto
 
 频繁切换客户端后如果状态栏、面板边框、面板布局看起来"卡在旧尺寸上"，按 `prefix C-r` 可以强制重绘：清掉 `@ui_mode` 守卫、删除状态栏缓存、重跑一次自动检测，然后向每个已连接的客户端发 `refresh-client`，并按当前布局做一次 `select-layout` 让面板重新贴边。
 
-> **从 0 部署到新服务器 / 新中继？** 参考 [`docs/mobile-relay-setup.md`](docs/mobile-relay-setup.md) —— 一份独立的技术文档，涵盖中继 VPS 硬化、autossh + systemd 反向隧道、Termius ProxyJump 配置、`mobile-attach` 落地的端到端步骤。
+> **从 0 部署到新服务器 / 新中继？** 相关基础设施（中继 VPS 硬化、autossh + systemd 反向隧道、Termius ProxyJump 配置、`mobile-attach` 落地）以及对应的 `install-relay.sh` / `install-server.sh` 一键安装脚本已独立到另一个 repo：**<https://github.com/Zephyrion-Yuan/mobile-relay-setup>**。本仓库只保留 `mobile-attach` 本身作为 dotfile。
 
 ## 手机端：dtach 替代 tmux
 
