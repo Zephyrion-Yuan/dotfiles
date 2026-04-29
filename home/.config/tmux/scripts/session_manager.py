@@ -6,16 +6,22 @@ import sys
 from typing import List, Dict
 
 
-def run_tmux(args: List[str], check: bool = True, capture: bool = False) -> str:
+def run_tmux(args: List[str], check: bool = False, capture: bool = False) -> str:
     kwargs = {
         "check": check,
     }
     if capture:
         kwargs["stdout"] = subprocess.PIPE
+        kwargs["stderr"] = subprocess.DEVNULL
         kwargs["text"] = True
-    result = subprocess.run(["tmux", *args], **kwargs)
+    else:
+        kwargs["stderr"] = subprocess.DEVNULL
+    try:
+        result = subprocess.run(["tmux", *args], **kwargs)
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return ""
     if capture:
-        return result.stdout.rstrip("\n")
+        return (result.stdout or "").rstrip("\n")
     return ""
 
 
