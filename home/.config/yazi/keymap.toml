@@ -1,0 +1,14 @@
+# File-manager integration keys. Cross-platform: the commands are guarded by
+# `uname`, so on macOS you get Finder, on Linux you get xdg-open, and nothing
+# errors out on the platform that doesn't apply.
+# These run on the hovered file, or on the multi-selection if you have one.
+
+[[mgr.prepend_keymap]]
+on = "<C-o>"
+run = '''shell 'case "$(uname)" in Darwin) open -R "$@" ;; esac' '''
+desc = "Reveal in Finder (macOS)"
+
+[[mgr.prepend_keymap]]
+on = "F"
+run = '''shell 'case "$(uname)" in Darwin) open "$@" ;; Linux) xdg-open "$@" ;; esac' '''
+desc = "Open with the OS default app"

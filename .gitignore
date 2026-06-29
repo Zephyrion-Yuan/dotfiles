@@ -10,6 +10,9 @@ home/.gitconfig.local
 *.swo
 *~
 
+# Backup files
+*.bak
+
 # Neovim local noise
 home/.config/nvim/.netrwhist
 home/.config/nvim/.pytest_cache/

@@ -1,9 +1,22 @@
+# Openers. yazi already ships macOS `open`/`reveal`/`play` openers, so we only
+# override `edit` (to use nvim) and the routing rules below.
 [opener]
 edit = [
-	{ run = 'nvim %s', block = true, for = "unix" },
+	{ run = 'nvim %s', desc = "Edit (nvim)", block = true, for = "unix" },
 ]
 
 [open]
+# How files are routed. The FIRST opener runs on Enter/`o`; press `O` (or
+# Shift+Enter) to pick from the whole list instead.
 prepend_rules = [
-	{ mime = "text/*", use = "edit" },
+	# Text & code: nvim by default, but `O` also offers "Open (macOS app)" and
+	# "Reveal in Finder" without leaving yazi.
+	{ mime = "text/*", use = [ "edit", "open", "reveal" ] },
 ]
+append_rules = [
+	# Anything not matched by a built-in rule -> open with its macOS default app.
+	{ name = "*", use = [ "open", "reveal", "edit" ] },
+]
+
+# NOTE: images / video / audio / PDF / archives keep yazi's built-in routing,
+# which on macOS already opens them with `open` (Preview, QuickTime, ...).
