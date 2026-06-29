@@ -22,3 +22,6 @@ home/.config/nvim/sessions/
 
 # Yazi runtime leftovers
 home/.config/yazi/package/
+
+# Machine-local zsh secrets (lives at ~/.zshrc.local)
+home/.zshrc.local
