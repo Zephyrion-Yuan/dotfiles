@@ -50,10 +50,17 @@ cat > ~/.zshrc.local <<'EOF'
 # proxy_on() { ... }
 EOF
 
-# 5. 安装 tmux 插件管理器 TPM
+# 5. 安装 Nerd Font（终端字形依赖，Linux 必需）
+#    tmux 状态栏 / pane 边框、starship 提示符用到 Nerd Font 私有区字形
+#    （powerline 分隔符、图标）。缺字体会渲染成方框 / 空白。脚本幂等，
+#    已装任意 Nerd Font 会自动跳过。
+bash ~/.dotfiles/scripts/install-nerd-font.sh
+#    装好后把终端字体设为：JetBrainsMono Nerd Font（GNOME Terminal / WezTerm 等均在各自设置里选）
+
+# 6. 安装 tmux 插件管理器 TPM
 git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
 
-# 6. 启动 tmux 后按 prefix + I 安装插件（prefix 已改为 C-s）
+# 7. 启动 tmux 后按 prefix + I 安装插件（prefix 已改为 C-s）
 tmux new -s main
 #   然后按: Ctrl-s, 再按 Shift+i
 ```
@@ -94,6 +101,10 @@ git push
 - **Neovim**：详见 [`home/.config/nvim/guide.markdown`](home/.config/nvim/guide.markdown)
 - **zsh**：`home/.zshrc`（可移植：conda/nvm 懒加载、PATH、yazi `y` 包装）；
   机器私有的密钥/代理/VPN 放在不进 git 的 `~/.zshrc.local`，由 `~/.zshrc` 末尾 source。
+- **字体**：`scripts/install-nerd-font.sh`（幂等安装 JetBrainsMono Nerd Font）
+  - Linux 下载安装到 `~/.local/share/fonts` 并 `fc-cache`；macOS 走 Homebrew cask
+  - 缺 Nerd Font 时 tmux/starship 的图标与 powerline 分隔符会显示成方框——这是新机器最常见的"渲染错误"
+  - 终端字体统一选 `JetBrainsMono Nerd Font`
 
 ## 常见维护命令速查
 
