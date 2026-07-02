@@ -3,7 +3,7 @@ set -euo pipefail
 
 # Determine theme color from tmux environments with fallback
 # Prefer session env, then global env, else default.
-DEFAULT="#b294bb"
+DEFAULT="#2e7d32"
 
 theme_line=$(tmux show-environment TMUX_THEME_COLOR 2>/dev/null || true)
 if [[ "$theme_line" == TMUX_THEME_COLOR=* ]]; then

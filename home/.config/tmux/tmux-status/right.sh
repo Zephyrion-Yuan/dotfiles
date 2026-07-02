@@ -20,9 +20,9 @@ if [[ -z "$status_bg" || "$status_bg" == "default" ]]; then
   status_bg=black
 fi
 
-segment_fg="#eceff4"
-host_bg="${TMUX_THEME_COLOR:-#b294bb}"
-host_fg="#1d1f21"
+segment_fg="#1e2030"
+host_bg="${TMUX_THEME_COLOR:-#2e7d32}"
+host_fg="#eff1f5"
 separator=""
 right_cap="█"
 hostname=$(hostname -s 2>/dev/null || hostname 2>/dev/null || printf 'host')
@@ -30,12 +30,12 @@ hostname=$(hostname -s 2>/dev/null || hostname 2>/dev/null || printf 'host')
 # --- Data gathering ---
 
 # Memory usage
-mem_pane_bg="#5e81ac"
-mem_pane_fg="#eceff4"
-mem_win_bg="#4c566a"
-mem_win_fg="#eceff4"
-mem_total_bg="#3b4252"
-mem_total_fg="#eceff4"
+mem_pane_bg="#ccd0da"
+mem_pane_fg="#1e2030"
+mem_win_bg="#bcc0cc"
+mem_win_fg="#1e2030"
+mem_total_bg="#acb0be"
+mem_total_fg="#1e2030"
 mem_pane_val=""
 mem_win_val=""
 mem_total_val=""
@@ -53,7 +53,7 @@ if [[ -x "$mem_script" ]]; then
 fi
 
 # Rainbarf
-rainbarf_bg="#2e3440"
+rainbarf_bg="#dce0e8"
 rainbarf_segment=""
 rainbarf_toggle="${TMUX_RAINBARF:-1}"
 case "$rainbarf_toggle" in
@@ -109,7 +109,7 @@ fi
 
 notes_segment=""
 if [[ -n "$notes_output" ]]; then
-  notes_bg="#cc6666"
+  notes_bg="#df8e1d"
   notes_fg="#1d1f21"
   notes_segment=$(printf '#[fg=%s,bg=%s]%s#[fg=%s,bg=%s,bold]%s#[default]' \
     "$notes_bg" "$prev_bg" "$separator" \
