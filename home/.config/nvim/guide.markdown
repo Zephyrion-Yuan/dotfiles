@@ -2,6 +2,13 @@
 
 当前配置里的 `leader` 键是空格，也就是 `<leader>` = `Space`。
 
+## 外观与基础行为
+
+- 配色：Nightfox 插件的浅色 `dayfox` 主题
+- 行号：显示相对行号
+- 剪贴板：使用系统剪贴板（`unnamed`）
+- 插件版本：由 `lazy-lock.json` 锁定
+
 ## 文件管理
 
 - `Space e`：打开 `yazi`，起点为当前文件所在位置
@@ -55,4 +62,3 @@
 - `:MarkdownPreview`：启动预览
 - `:MarkdownPreviewStop`：停止预览
 - `:MarkdownPreviewToggle`：切换预览
-

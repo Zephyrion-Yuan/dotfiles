@@ -1,121 +1,125 @@
 # dotfiles
 
-个人终端环境配置仓库，覆盖 `tmux`、`neovim`、`yazi`、`wezterm` 四个工具的配置，以及可移植的 `zsh` 配置。
+个人可移植终端环境配置。仓库以当前机器的实际配置为准，覆盖 Herdr、Alacritty、
+WezTerm、tmux、Neovim、Yazi 和 zsh；密钥、日志、socket、会话状态及设备绑定配置不入库。
 
 GitHub：<https://github.com/Zephyrion-Yuan/dotfiles>
 
-## 目录结构
-
-```
-~/.dotfiles/
-├── README.md
-├── .gitignore
-└── home/
-    ├── .zshrc           # 可移植的 zsh 配置（机器私有部分见 ~/.zshrc.local）
-    └── .config/
-        ├── tmux/        # tmux 配置 + 状态栏脚本
-        ├── nvim/        # Neovim 配置（init.lua + lua/ + lazy-lock.json）
-        ├── yazi/        # Yazi 文件管理器配置
-        └── wezterm/     # WezTerm 终端配置（浅/深色跟随系统）
-```
-
-`home/` 下的结构与实际家目录一一对应，所有真实配置通过符号链接指向本仓库。
-
-## 安装（首次部署到新机器）
+## 在另一台机器安装
 
 ```bash
-# 1. 克隆仓库到固定位置
 git clone https://github.com/Zephyrion-Yuan/dotfiles.git ~/.dotfiles
-cd ~/.dotfiles
-
-# 2. 备份已有配置（如有）
-mv ~/.config/tmux ~/.config/tmux.bak 2>/dev/null || true
-mv ~/.config/nvim ~/.config/nvim.bak 2>/dev/null || true
-mv ~/.config/yazi ~/.config/yazi.bak 2>/dev/null || true
-mv ~/.config/wezterm ~/.config/wezterm.bak 2>/dev/null || true
-mv ~/.zshrc ~/.zshrc.bak 2>/dev/null || true
-
-# 3. 建立符号链接
-mkdir -p ~/.config
-ln -s ~/.dotfiles/home/.config/tmux    ~/.config/tmux
-ln -s ~/.dotfiles/home/.config/nvim    ~/.config/nvim
-ln -s ~/.dotfiles/home/.config/yazi    ~/.config/yazi
-ln -s ~/.dotfiles/home/.config/wezterm ~/.config/wezterm
-ln -s ~/.dotfiles/home/.zshrc          ~/.zshrc
-
-# 4. 机器私有的 zsh 配置（密钥 / 代理 / 公司 VPN 等，不进 git）
-#    ~/.zshrc 末尾会自动 source 它
-cat > ~/.zshrc.local <<'EOF'
-# export SOME_API_KEY=...
-# proxy_on() { ... }
-EOF
-
-# 5. 安装 Nerd Font（终端字形依赖，Linux 必需）
-#    tmux 状态栏 / pane 边框、starship 提示符用到 Nerd Font 私有区字形
-#    （powerline 分隔符、图标）。缺字体会渲染成方框 / 空白。脚本幂等，
-#    已装任意 Nerd Font 会自动跳过。
 bash ~/.dotfiles/scripts/install-nerd-font.sh
-#    装好后把终端字体设为：JetBrainsMono Nerd Font（GNOME Terminal / WezTerm 等均在各自设置里选）
-
-# 6. 安装 tmux 插件管理器 TPM
-git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
-
-# 7. 启动 tmux 后按 prefix + I 安装插件（prefix 已改为 C-s）
-tmux new -s main
-#   然后按: Ctrl-s, 再按 Shift+i
+~/.dotfiles/install.sh
 ```
 
-Neovim 首次启动会通过 `lazy.nvim` 自动安装插件，等待提示结束即可。`lazy-lock.json` 已在仓库中，`:Lazy restore` 可以锁定到同一版本。
+字体脚本会在缺少时安装 `Hack Nerd Font Mono`：macOS 使用 Homebrew cask，
+Linux 安装到 `~/.local/share/fonts`。它是 Alacritty 与 tmux 图标的字形依赖。
+
+`install.sh` 会先把目标机器已有配置改名为
+`*.pre-dotfiles-YYYYMMDD-HHMMSS`，再建立符号链接，因此仓库版本会覆盖旧设置，
+同时保留可恢复的备份。Herdr 目录中有运行时状态，所以脚本只链接
+`~/.config/herdr/config.toml`，不会碰会话与日志。
+
+建议先安装：`herdr`、`alacritty` 或 `wezterm`、`tmux`、`neovim` 和 `yazi`。
+首次启动 Neovim 会通过 `lazy.nvim` 安装插件；`lazy-lock.json` 固定了当前插件版本。
+tmux 插件管理器可另行安装：
+
+```bash
+git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+```
+
+进入 tmux 后按 `Ctrl-s`、`Shift-i` 安装插件。
+
+## 当前设置摘要
+
+### Herdr
+
+- Prefix：`Ctrl-s`。
+- 外观：跟随终端浅/深色；浅色 `catppuccin-latte`，深色 `catppuccin`。
+- 其余动作沿用 Herdr 默认绑定。常用组合为：
+  `Ctrl-s ?` 帮助、`Ctrl-s s` 设置、`Ctrl-s w` 工作区选择、
+  `Ctrl-s c` 新标签、`Ctrl-s p/n` 前后标签、`Ctrl-s 1..9` 切换标签、
+  `Ctrl-s v/-` 分屏、`Ctrl-s h/j/k/l` 切换面板、`Ctrl-s z` 缩放、
+  `Ctrl-s q` 分离。
+
+### Alacritty
+
+- Gruvbox Light，14pt `Hack Nerd Font Mono`，透明标题栏与紧凑内边距。
+- 选中文本自动进入剪贴板；`Cmd+点击` 打开 URL。
+- `Cmd+Left/Right` 到行首/行尾，`Option+Left/Right` 按单词移动。
+
+### WezTerm
+
+- 作为备选终端保留；跟随 macOS 外观切换 Catppuccin Latte/Mocha。
+- 14pt、半透明背景；`Cmd+点击` 在 tmux 内也能打开链接。
+- `Cmd+Left/Right` 到行首/行尾，`Option+Left/Right` 按单词移动。
+
+### tmux
+
+- Prefix 同样为 `Ctrl-s`；配置热重载为 `Ctrl-s r`。
+- Colemak 方向习惯：`Alt+n/e/u/i` 切换面板，
+  `Alt+Shift+n/e/u/i` 调整面板大小。
+- `Ctrl-s n/e/u/i` 分别向左/下/上/右分屏，`Alt-f` 缩放当前面板。
+- `Alt+1..9` 切换窗口，`Ctrl+1..9` 切换会话。
+- 状态栏、会话恢复和剪贴板脚本均在 `home/.config/tmux/`。
+
+### Neovim
+
+- 浅色 `dayfox` 主题，相对行号，系统剪贴板。
+- 插件由 `lazy.nvim` 管理，包括 LSP/Mason、补全、Treesitter、Yazi、
+  Neotest 与 Markdown Preview。
+- Leader 为 `Space`；完整快捷键见
+  [`home/.config/nvim/guide.markdown`](home/.config/nvim/guide.markdown)。
+
+### Yazi 与 zsh
+
+- Yazi 使用 Catppuccin Frappe；文本默认用 Neovim，`Ctrl-o` 在 Finder 中显示，
+  `F` 用系统应用打开。详见
+  [`home/.config/yazi/guide.markdown`](home/.config/yazi/guide.markdown)。
+- zsh 对 conda/nvm 做懒加载，并提供退出 Yazi 后自动 `cd` 的 `y` 包装。
+- 密钥、代理、VPN 和机器专属 PATH 放入 `~/.zshrc.local`；主配置会自动载入，
+  此文件不会提交。
+
+## 目录结构
+
+```text
+~/.dotfiles/
+├── install.sh
+├── scripts/install-nerd-font.sh
+└── home/
+    ├── .zshrc
+    └── .config/
+        ├── alacritty/
+        ├── herdr/config.toml
+        ├── nvim/
+        ├── tmux/
+        ├── wezterm/
+        └── yazi/
+```
 
 ## 日常同步
 
-仓库是通过符号链接生效的，所以**直接修改 `~/.config/<tool>/`（或 `~/.zshrc`）就是在修改仓库**。
+真实配置通过符号链接指向仓库，因此修改 `~/.config/<tool>/` 或 `~/.zshrc`
+就等于修改仓库。
 
 ```bash
-# 拉取远端最新配置
 cd ~/.dotfiles
 git pull --rebase
-
-# 推送本地修改
-cd ~/.dotfiles
-git status                # 查看变动
 git add -A
-git commit -m "调整说明"
+git commit -m "更新终端配置"
 git push
 ```
 
-> 注意：`home/.gitconfig.local`、`home/.zshrc.local`、`local/`、`*.bak`、`*.swp` 等已在 `.gitignore` 中忽略。带有本机敏感信息的内容请放在 `~/.zshrc.local` 或 `local/`，不会被提交。
-
-## 四个工具 + zsh 的入口
-
-- **tmux**：`home/.config/tmux/tmux.conf`
-  - `prefix` 改为 `C-s`（不是默认的 `C-b`）
-  - 窗口/面板导航使用 Colemak 友好的 `M-n/e/u/i` 方向键
-  - 状态栏由 `tmux-status/left.sh`、`tmux-status/right.sh` 生成
-  - 插件通过 TPM：`tmux-resurrect`、`tmux-continuum`（自动保存每 5 分钟）
-- **WezTerm**：`home/.config/wezterm/wezterm.lua`
-  - 配色跟随 macOS 系统外观自动切换（浅色 Catppuccin Latte / 深色 Mocha）
-  - `Cmd+点击` 打开链接（即使在 tmux 内也生效）
-- **Yazi**：详见 [`home/.config/yazi/guide.markdown`](home/.config/yazi/guide.markdown)
-  - 文本默认 nvim；图片/视频/PDF 等走系统默认 App；`<C-o>` 在 Finder 中显示
-- **Neovim**：详见 [`home/.config/nvim/guide.markdown`](home/.config/nvim/guide.markdown)
-- **zsh**：`home/.zshrc`（可移植：conda/nvm 懒加载、PATH、yazi `y` 包装）；
-  机器私有的密钥/代理/VPN 放在不进 git 的 `~/.zshrc.local`，由 `~/.zshrc` 末尾 source。
-- **字体**：`scripts/install-nerd-font.sh`（幂等安装 JetBrainsMono Nerd Font）
-  - Linux 下载安装到 `~/.local/share/fonts` 并 `fc-cache`；macOS 走 Homebrew cask
-  - 缺 Nerd Font 时 tmux/starship 的图标与 powerline 分隔符会显示成方框——这是新机器最常见的"渲染错误"
-  - 终端字体统一选 `JetBrainsMono Nerd Font`
-
-## 常见维护命令速查
+常用维护命令：
 
 ```bash
-# tmux 配置热重载
+herdr config check
+herdr server reload-config
 tmux source ~/.config/tmux/tmux.conf
-
-# Neovim 更新/回滚插件
 nvim +Lazy
-nvim +"Lazy restore"   # 回到 lazy-lock.json 锁定版本
-
-# 把本机一次性修改应用到仓库并推送
-cd ~/.dotfiles && git add -A && git commit -m "..." && git push
+nvim +"Lazy restore"
 ```
+
+本机私有内容请放在 `~/.zshrc.local` 或仓库的 `local/`。Karabiner 的当前配置
+含具体设备记录，Herdr 的 `session.json` 含本机路径与会话 ID，这些都有意排除。

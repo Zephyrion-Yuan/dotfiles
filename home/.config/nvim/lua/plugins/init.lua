@@ -1,6 +1,6 @@
 return {
     	-- ColorThemes
-	"tanvirtin/monokai.nvim",
+	"EdenEast/nightfox.nvim",
 	-- Vscode-like pictograms
 	{
 		"onsails/lspkind.nvim",

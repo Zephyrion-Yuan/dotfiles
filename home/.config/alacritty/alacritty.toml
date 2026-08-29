@@ -1,0 +1,45 @@
+# Gruvbox Light palette.
+general.import = ["~/.config/alacritty/themes/gruvbox_light.toml"]
+
+[window]
+# macOS: blend the title bar into the terminal while keeping window controls.
+decorations = "Transparent"
+dynamic_title = true
+padding = { x = 10, y = 8 }
+dynamic_padding = true
+option_as_alt = "Both"
+
+[font]
+# Yazi's icons require a Nerd Font; the mono variant keeps cell widths stable.
+normal = { family = "Hack Nerd Font Mono", style = "Regular" }
+bold = { family = "Hack Nerd Font Mono", style = "Bold" }
+italic = { family = "Hack Nerd Font Mono", style = "Italic" }
+bold_italic = { family = "Hack Nerd Font Mono", style = "Bold Italic" }
+size = 14.0
+
+[cursor]
+style = { shape = "Block", blinking = "On" }
+
+[selection]
+save_to_clipboard = true
+
+# Command + click opens detected URLs and OSC 8 hyperlinks in the macOS
+# default browser/application.
+[[hints.enabled]]
+command = "open"
+hyperlinks = true
+post_processing = true
+persist = false
+regex = '(https?://|mailto:)[^ \t\r\n<>"]+'
+mouse = { enabled = true, mods = "Command" }
+
+[keyboard]
+bindings = [
+  # Shell/readline line navigation.
+  { key = "ArrowLeft",  mods = "Command", chars = "\u0001" }, # Ctrl-A: line start
+  { key = "ArrowRight", mods = "Command", chars = "\u0005" }, # Ctrl-E: line end
+
+  # Shell/readline word navigation.
+  { key = "ArrowLeft",  mods = "Alt", chars = "\u001bb" }, # Esc-b: previous word
+  { key = "ArrowRight", mods = "Alt", chars = "\u001bf" }, # Esc-f: next word
+]
