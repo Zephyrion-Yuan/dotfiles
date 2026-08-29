@@ -26,7 +26,7 @@ link_config() {
     printf 'linked:        %s -> %s\n' "$target_path" "$source_path"
 }
 
-for app in alacritty nvim tmux wezterm yazi; do
+for app in alacritty nvim wezterm yazi; do
     link_config "$dotfiles_dir/home/.config/$app" "$HOME/.config/$app"
 done
 
@@ -35,7 +35,7 @@ done
 link_config "$dotfiles_dir/home/.config/herdr/config.toml" \
     "$HOME/.config/herdr/config.toml"
 
-link_config "$dotfiles_dir/home/.zshrc" "$HOME/.zshrc"
+link_config "$dotfiles_dir/home/.bashrc" "$HOME/.bashrc"
 
 printf '\nDotfiles installed. Existing files were retained as *.pre-dotfiles-%s.\n' \
     "$backup_stamp"

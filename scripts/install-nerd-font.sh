@@ -3,8 +3,8 @@ set -euo pipefail
 
 # 幂等安装 Nerd Font。
 #
-# 背景：tmux 状态栏 / pane 边框、starship 提示符依赖 Nerd Font 私有区字形
-# （powerline 分隔符 U+E0B0、各类图标）。macOS 上终端一般已配好 Nerd Font，
+# 背景：终端提示符和工具图标依赖 Nerd Font 私有区字形（powerline 分隔符
+# U+E0B0、各类图标）。macOS 上终端一般已配好 Nerd Font，
 # 但新的 Linux 机器默认没有，会把这些字形渲染成方框 / 空白。
 # 本脚本检测缺失时自动下载安装当前 Alacritty 配置使用的 Hack Nerd Font
 # Mono，并刷新字体缓存。
