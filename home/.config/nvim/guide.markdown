@@ -61,9 +61,3 @@
 
 - `:Markview toggle`：切换当前文件的预览
 - `:Markview splitToggle`：切换并排预览
-
-需要浏览器预览时，继续使用：
-
-- `:MarkdownPreview`：启动预览
-- `:MarkdownPreviewStop`：停止预览
-- `:MarkdownPreviewToggle`：切换预览
