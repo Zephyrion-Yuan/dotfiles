@@ -57,7 +57,12 @@
 
 ## Markdown 预览
 
-当前没有单独绑定快捷键，使用命令：
+打开 Markdown 文件时，Markview 会在 Neovim 内显示预览。使用命令：
+
+- `:Markview toggle`：切换当前文件的预览
+- `:Markview splitToggle`：切换并排预览
+
+需要浏览器预览时，继续使用：
 
 - `:MarkdownPreview`：启动预览
 - `:MarkdownPreviewStop`：停止预览
